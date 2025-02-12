@@ -1,6 +1,9 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -16,11 +19,14 @@ const (
 
 	// env names for srv config
 	srvPortEnv = "SERVER_PORT" 
+
+	secretKeyLen = 16
 )
 
 type Config struct {
 	Db ConfigDB
 	Srv ConfigSrv
+	JWT ConfigJWT
 }
 
 type ConfigSrv struct {
@@ -33,6 +39,10 @@ type ConfigDB struct {
 	DbPass string
 	DbName string
 	DbHost string
+}
+
+type ConfigJWT struct {
+	Secret string
 }
 
 func MustLoad() *Config {
@@ -52,6 +62,11 @@ func MustLoad() *Config {
 	if err != nil {
 		log.Fatalf("invalid server port: %s", err)
 	}
+
+	secret, err := generateSecretKey()
+	if err != nil {
+		log.Fatal(err)
+	}
 	
 	return &Config{
 		Db: ConfigDB{
@@ -64,6 +79,9 @@ func MustLoad() *Config {
 		Srv: ConfigSrv{
 			SrvPort: srvPort,
 		},	
+		JWT: ConfigJWT{
+			Secret: secret,
+		},
 	}
 }
 
@@ -74,4 +92,13 @@ func getStringOrDefault(name, defaultVal string) string {
 	}
 
 	return res
+}
+
+func generateSecretKey() (string, error) {
+	bytes := make([]byte, secretKeyLen)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", fmt.Errorf("cannot generate secret: %s", err)
+	}
+	return base64.URLEncoding.EncodeToString(bytes), nil
 }
