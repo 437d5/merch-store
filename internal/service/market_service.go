@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
@@ -25,10 +26,10 @@ func NewMarketService(
 	}
 }
 
-func (s *MarketService) BuyMerch(userId int, item inventory.Item) error {
+func (s *MarketService) BuyMerch(ctx context.Context, userId int, item inventory.Item) error {
 	const op = "/internal/service/market_service/BuyMerch"
 
-	user, err := s.userRepo.GetByID(userId)
+	user, err := s.userRepo.GetByID(ctx, userId)
 	if err != nil {
 		s.logger.Error("cannot find user", "op", op, "error", err)
 		return fmt.Errorf("cannot find user: %s", err)
@@ -48,7 +49,7 @@ func (s *MarketService) BuyMerch(userId int, item inventory.Item) error {
 	user.Coins = user.Coins - itemCard.Cost
 	user.Inventory.AddItem(item)
 
-	err = s.userRepo.Update(user)
+	err = s.userRepo.Update(ctx, user)
 	if err != nil {
 		s.logger.Error("cannot update user", "op", op, "error", err)
 		return fmt.Errorf("cannot update user: %s", err)

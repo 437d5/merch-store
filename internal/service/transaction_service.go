@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -32,16 +33,19 @@ func NewTransactionService(
 	}
 }
 
-func (s *TransactionService) TransferCoins(fromUserId, toUserId, amount int) error {
+func (s *TransactionService) TransferCoins(
+	ctx context.Context, 
+	fromUserId, toUserId, amount int,
+) error {
 	const op = "/internal/service/transaction_service/TransferCoins"
 	
-	fromUser, err := s.userRepo.GetByID(fromUserId)
+	fromUser, err := s.userRepo.GetByID(ctx, fromUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
 		return fmt.Errorf("cannot transfer coins: %s", err)
 	}
 
-	toUser, err := s.userRepo.GetByID(toUserId)
+	toUser, err := s.userRepo.GetByID(ctx, toUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
 		return fmt.Errorf("cannot transfer coins: %s", err)
@@ -60,14 +64,14 @@ func (s *TransactionService) TransferCoins(fromUserId, toUserId, amount int) err
 	fromUser.Coins -= amount
 	toUser.Coins += amount
 
-	err = s.userRepo.Update(fromUser)
+	err = s.userRepo.Update(ctx, fromUser)
 	if err != nil {
 		s.logger.Error("Cannot update 'from' user", "op", op, "error", err)
 		return err
 	}
 	s.logger.Debug("FromUser updated", "op", op)
 
-	err = s.userRepo.Update(toUser)
+	err = s.userRepo.Update(ctx, toUser)
 	if err != nil {
 		s.logger.Error("Cannot update 'to' user", "op", op, "error", err)
 		return err
@@ -82,5 +86,5 @@ func (s *TransactionService) TransferCoins(fromUserId, toUserId, amount int) err
 	}
 
 	s.logger.Debug("Trying create transaction", "op", op)
-	return s.transactionRepo.Create(transaction)
+	return s.transactionRepo.Create(ctx, transaction)
 }

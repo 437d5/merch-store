@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -23,10 +24,10 @@ func NewUserService(userRepo user.UserRepo, logger *slog.Logger) *UserService {
 	}
 }
 
-func (s *UserService) AuthUser(name, password string) (user.User, error) {
+func (s *UserService) AuthUser(ctx context.Context, name, password string) (user.User, error) {
 	const op = "/internal/service/user_service/AuthUser"
 
-	existingUser, err := s.userRepo.GetByName(name)
+	existingUser, err := s.userRepo.GetByName(ctx, name)
 	if err == nil {
 		if !existingUser.CheckPassword(password) {
 			s.logger.Error("Failed to authenticate", "op", op, "errror", ErrInvalidPassword)
@@ -47,9 +48,9 @@ func (s *UserService) AuthUser(name, password string) (user.User, error) {
 	if err != nil {
 		s.logger.Error("cannot register new user", "op", op, "error", err)
 		return user.User{}, fmt.Errorf("cannot set pass: %s", err)
-	}
+	} 
 
-	err = s.userRepo.Create(newUser)
+	err = s.userRepo.Create(ctx, newUser)
 	if err != nil {
 		s.logger.Error("Error creating new user", "op", op, "error", err)
 	}

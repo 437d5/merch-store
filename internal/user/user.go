@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/437d5/merch-store/internal/inventory"
@@ -16,10 +17,10 @@ type User struct {
 }
 
 type UserRepo interface {
-	GetByID(id int) (User, error)
-	GetByName(name string) (User, error)
-	Create(user User) error
-	Update(user User) error
+	GetByID(ctx context.Context, id int) (User, error)
+	GetByName(ctx context.Context, name string) (User, error)
+	Create(ctx context.Context, user User) error
+	Update(ctx context.Context, user User) error
 }
 
 func (u *User) SetPassword(password string) error {

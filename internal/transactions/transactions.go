@@ -1,6 +1,7 @@
 package transactions
 
 import (
+	"context"
 	"time"
 )
 
@@ -13,6 +14,6 @@ type Transaction struct {
 }
 
 type TransactionRepo interface {
-	Create(transaction Transaction) error
-	GetByUser(userId int) ([]Transaction, error)
+	Create(ctx context.Context, transaction Transaction) error
+	GetByUser(ctx context.Context, userId int) ([]Transaction, error)
 }
