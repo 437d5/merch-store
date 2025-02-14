@@ -50,11 +50,12 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 		return user.User{}, fmt.Errorf("cannot set pass: %s", err)
 	} 
 
-	err = s.userRepo.Create(ctx, newUser)
+	id, err := s.userRepo.Create(ctx, newUser)
 	if err != nil {
 		s.logger.Error("Error creating new user", "op", op, "error", err)
 	}
 
+	newUser.Id = id
 	s.logger.Info("New user authenticated succesfully", "op", op, "username", newUser.Name)
 	return newUser, nil
 }
