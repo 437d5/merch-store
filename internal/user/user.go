@@ -19,7 +19,7 @@ type User struct {
 type UserRepo interface {
 	GetByID(ctx context.Context, id int) (User, error)
 	GetByName(ctx context.Context, name string) (User, error)
-	Create(ctx context.Context, user User) error
+	Create(ctx context.Context, user User) (int, error)
 	Update(ctx context.Context, user User) error
 }
 
