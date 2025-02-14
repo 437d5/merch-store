@@ -42,13 +42,13 @@ func (s *TransactionService) TransferCoins(
 	fromUser, err := s.userRepo.GetByID(ctx, fromUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
-		return fmt.Errorf("cannot transfer coins: %s", err)
+		return fmt.Errorf("cannot transfer coins: %w", err)
 	}
 
 	toUser, err := s.userRepo.GetByID(ctx, toUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
-		return fmt.Errorf("cannot transfer coins: %s", err)
+		return fmt.Errorf("cannot transfer coins: %w", err)
 	}
 
 	if fromUser.Coins < amount {

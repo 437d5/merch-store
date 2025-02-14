@@ -47,7 +47,7 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 	err = newUser.SetPassword(password)
 	if err != nil {
 		s.logger.Error("cannot register new user", "op", op, "error", err)
-		return user.User{}, fmt.Errorf("cannot set pass: %s", err)
+		return user.User{}, fmt.Errorf("cannot set pass: %w", err)
 	} 
 
 	id, err := s.userRepo.Create(ctx, newUser)
