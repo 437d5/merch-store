@@ -21,12 +21,15 @@ const (
 	srvPortEnv = "SERVER_PORT" 
 
 	secretKeyLen = 16
+
+	logModeEnv = "LOG_MODE"
 )
 
 type Config struct {
 	Db ConfigDB
 	Srv ConfigSrv
 	JWT ConfigJWT
+	Log ConfigLog
 }
 
 type ConfigSrv struct {
@@ -43,6 +46,10 @@ type ConfigDB struct {
 
 type ConfigJWT struct {
 	Secret string
+}
+
+type ConfigLog struct {
+	LogMode string
 }
 
 func MustLoad() *Config {
@@ -63,10 +70,12 @@ func MustLoad() *Config {
 		log.Fatalf("invalid server port: %s", err)
 	}
 
-	secret, err := generateSecretKey()
+	secret, err := generateSecretKey(secretKeyLen)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log := getStringOrDefault(logModeEnv, "JSON")
 	
 	return &Config{
 		Db: ConfigDB{
@@ -82,6 +91,9 @@ func MustLoad() *Config {
 		JWT: ConfigJWT{
 			Secret: secret,
 		},
+		Log: ConfigLog{
+			LogMode: log,
+		},	
 	}
 }
 
@@ -94,8 +106,8 @@ func getStringOrDefault(name, defaultVal string) string {
 	return res
 }
 
-func generateSecretKey() (string, error) {
-	bytes := make([]byte, secretKeyLen)
+func generateSecretKey(keyLen int) (string, error) {
+	bytes := make([]byte, keyLen)
 	_, err := rand.Read(bytes)
 	if err != nil {
 		return "", fmt.Errorf("cannot generate secret: %s", err)
