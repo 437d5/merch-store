@@ -27,7 +27,7 @@ func NewUserService(userRepo user.UserRepo, logger *slog.Logger) *UserService {
 func (s *UserService) AuthUser(ctx context.Context, name, password string) (user.User, error) {
 	const op = "/internal/service/user_service/AuthUser"
 
-	existingUser, err := s.userRepo.GetByName(ctx, name)
+	existingUser, err := s.userRepo.GetUserByName(ctx, name)
 	if err == nil {
 		if !existingUser.CheckPassword(password) {
 			s.logger.Error("Failed to authenticate", "op", op, "errror", ErrInvalidPassword)
@@ -50,7 +50,7 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 		return user.User{}, fmt.Errorf("cannot set pass: %w", err)
 	} 
 
-	id, err := s.userRepo.Create(ctx, newUser)
+	id, err := s.userRepo.CreateUser(ctx, newUser)
 	if err != nil {
 		s.logger.Error("Error creating new user", "op", op, "error", err)
 	}
@@ -59,3 +59,5 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 	s.logger.Info("New user authenticated succesfully", "op", op, "username", newUser.Name)
 	return newUser, nil
 }
+
+// TODO add info method

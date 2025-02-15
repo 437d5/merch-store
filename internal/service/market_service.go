@@ -29,13 +29,13 @@ func NewMarketService(
 func (s *MarketService) BuyMerch(ctx context.Context, userId int, item inventory.Item) error {
 	const op = "/internal/service/market_service/BuyMerch"
 
-	user, err := s.userRepo.GetByID(ctx, userId)
+	user, err := s.userRepo.GetUserByID(ctx, userId)
 	if err != nil {
 		s.logger.Error("cannot find user", "op", op, "error", err)
 		return fmt.Errorf("cannot find user: %w", err)
 	}
 
-	itemCard, err := s.itemRepo.GetByName(item.ItemType)
+	itemCard, err := s.itemRepo.GetItemByName(ctx, item.ItemType)
 	if err != nil {
 		s.logger.Error("cannot find item", "op", op, "error", err)
 		return fmt.Errorf("cannot find item: %w", err)
@@ -49,7 +49,7 @@ func (s *MarketService) BuyMerch(ctx context.Context, userId int, item inventory
 	user.Coins = user.Coins - itemCard.Cost
 	user.Inventory.AddItem(item)
 
-	err = s.userRepo.Update(ctx, user)
+	err = s.userRepo.UpdateUser(ctx, user)
 	if err != nil {
 		s.logger.Error("cannot update user", "op", op, "error", err)
 		return fmt.Errorf("cannot update user: %w", err)

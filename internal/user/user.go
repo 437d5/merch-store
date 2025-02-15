@@ -17,10 +17,10 @@ type User struct {
 }
 
 type UserRepo interface {
-	GetByID(ctx context.Context, id int) (User, error)
-	GetByName(ctx context.Context, name string) (User, error)
-	Create(ctx context.Context, user User) (int, error)
-	Update(ctx context.Context, user User) error
+	GetUserByID(ctx context.Context, id int) (User, error)
+	GetUserByName(ctx context.Context, name string) (User, error)
+	CreateUser(ctx context.Context, user User) (int, error)
+	UpdateUser(ctx context.Context, user User) error
 }
 
 func (u *User) SetPassword(password string) error {

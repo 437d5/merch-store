@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/437d5/merch-store/internal/transactions"
 	"github.com/437d5/merch-store/internal/user"
@@ -39,13 +38,13 @@ func (s *TransactionService) TransferCoins(
 ) error {
 	const op = "/internal/service/transaction_service/TransferCoins"
 	
-	fromUser, err := s.userRepo.GetByID(ctx, fromUserId)
+	fromUser, err := s.userRepo.GetUserByID(ctx, fromUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
 		return fmt.Errorf("cannot transfer coins: %w", err)
 	}
 
-	toUser, err := s.userRepo.GetByID(ctx, toUserId)
+	toUser, err := s.userRepo.GetUserByID(ctx, toUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
 		return fmt.Errorf("cannot transfer coins: %w", err)
@@ -64,14 +63,14 @@ func (s *TransactionService) TransferCoins(
 	fromUser.Coins -= amount
 	toUser.Coins += amount
 
-	err = s.userRepo.Update(ctx, fromUser)
+	err = s.userRepo.UpdateUser(ctx, fromUser)
 	if err != nil {
 		s.logger.Error("Cannot update 'from' user", "op", op, "error", err)
 		return err
 	}
 	s.logger.Debug("FromUser updated", "op", op)
 
-	err = s.userRepo.Update(ctx, toUser)
+	err = s.userRepo.UpdateUser(ctx, toUser)
 	if err != nil {
 		s.logger.Error("Cannot update 'to' user", "op", op, "error", err)
 		return err
@@ -82,9 +81,8 @@ func (s *TransactionService) TransferCoins(
 		FromUser: fromUserId,
 		ToUser: toUserId,
 		Amount: amount,
-		Timestamp: time.Now(),
 	}
 
 	s.logger.Debug("Trying create transaction", "op", op)
-	return s.transactionRepo.Create(ctx, transaction)
+	return s.transactionRepo.CreateTransaction(ctx, transaction)
 }
