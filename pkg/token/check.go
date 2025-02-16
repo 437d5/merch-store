@@ -11,21 +11,26 @@ var (
 	ErrInvalidToken = errors.New("invalid JWT")
 )
 
-func ValidateToken(token, secret string, id int) (bool, error) {
+func ValidateToken(token, secret string) (int, bool, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &TokenClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected sign method: %v", t.Header["alg"])
 		}
-		return secret, nil
+		return []byte(secret), nil
 	})
 
 	if err != nil {
-		return false, fmt.Errorf("invalid token: %s", err)
+		return 0, false, fmt.Errorf("invalid token: %s", err)
 	}
 
 	if !parsedToken.Valid {
-		return false, ErrInvalidToken
+		return 0, false, ErrInvalidToken
 	}
 
-	return true, nil
+	claims, ok := parsedToken.Claims.(*TokenClaims)
+	if !ok {
+		return 0, false, ErrInvalidToken
+	}
+
+	return claims.Id, true, nil
 }

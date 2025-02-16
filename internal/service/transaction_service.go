@@ -34,7 +34,7 @@ func NewTransactionService(
 
 func (s *TransactionService) TransferCoins(
 	ctx context.Context, 
-	fromUserId, toUserId, amount int,
+	fromUserId, amount int, toUsername string,
 ) error {
 	const op = "/internal/service/transaction_service/TransferCoins"
 	
@@ -44,7 +44,7 @@ func (s *TransactionService) TransferCoins(
 		return fmt.Errorf("cannot transfer coins: %w", err)
 	}
 
-	toUser, err := s.userRepo.GetUserByID(ctx, toUserId)
+	toUser, err := s.userRepo.GetUserByName(ctx, toUsername)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
 		return fmt.Errorf("cannot transfer coins: %w", err)
@@ -79,10 +79,24 @@ func (s *TransactionService) TransferCoins(
 
 	transaction := transactions.Transaction {
 		FromUser: fromUserId,
-		ToUser: toUserId,
+		ToUser: toUser.Id,
 		Amount: amount,
 	}
 
 	s.logger.Debug("Trying create transaction", "op", op)
 	return s.transactionRepo.CreateTransaction(ctx, transaction)
+}
+
+func (s *TransactionService) GetTransactionsByUser(
+	ctx context.Context, userId int,
+) ([]transactions.Transaction, error) {
+	const op = "/internal/service/transaction_service/GetTransactionsByUser"
+
+	tList, err := s.transactionRepo.GetTransactionByUser(ctx, userId)
+	if err != nil {
+		s.logger.Error("failed get transactions", "op", op, "error", err)
+		return nil, fmt.Errorf("failed to get transactions")
+	}
+
+	return tList, nil
 }

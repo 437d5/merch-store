@@ -40,7 +40,7 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 
 	newUser := user.User{
 		Name: name,
-		Coins: 0,
+		Coins: 100000,
 		Inventory: inventory.Inventory{},
 	}
 
@@ -60,4 +60,14 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 	return newUser, nil
 }
 
-// TODO add info method
+func (s *UserService) UserInfo(ctx context.Context, userId int) (user.User, error) {
+	const op = "/internal/service/user_service/UserInfo"
+
+	u, err := s.userRepo.GetUserByID(ctx, userId)
+	if err != nil {
+		s.logger.Error("failed get user", "op", op, "userId", userId)
+		return user.User{}, fmt.Errorf("failed get user: %w", err)
+	}
+
+	return u, nil
+}

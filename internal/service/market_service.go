@@ -26,7 +26,7 @@ func NewMarketService(
 	}
 }
 
-func (s *MarketService) BuyMerch(ctx context.Context, userId int, item inventory.Item) error {
+func (s *MarketService) BuyMerch(ctx context.Context, userId int, itemType string) error {
 	const op = "/internal/service/market_service/BuyMerch"
 
 	user, err := s.userRepo.GetUserByID(ctx, userId)
@@ -35,7 +35,7 @@ func (s *MarketService) BuyMerch(ctx context.Context, userId int, item inventory
 		return fmt.Errorf("cannot find user: %w", err)
 	}
 
-	itemCard, err := s.itemRepo.GetItemByName(ctx, item.ItemType)
+	itemCard, err := s.itemRepo.GetItemByName(ctx, itemType)
 	if err != nil {
 		s.logger.Error("cannot find item", "op", op, "error", err)
 		return fmt.Errorf("cannot find item: %w", err)
@@ -47,7 +47,10 @@ func (s *MarketService) BuyMerch(ctx context.Context, userId int, item inventory
 	}
 
 	user.Coins = user.Coins - itemCard.Cost
-	user.Inventory.AddItem(item)
+	user.Inventory.AddItem(inventory.Item{
+		ItemType: itemType,
+		Quantity: 1,
+	})
 
 	err = s.userRepo.UpdateUser(ctx, user)
 	if err != nil {
