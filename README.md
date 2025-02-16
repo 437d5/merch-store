@@ -18,7 +18,9 @@
 ```
 git clone https://github.com/437d5/merch-store.git
 ```
-
+```
+cd merch-store/
+```
 ```
 docker compose up --build
 ```
@@ -36,7 +38,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 ```
-pytest e2e_test.py
+pytest e2e.py
 ```
 
 ### Запуск нагрузочного тестирования
