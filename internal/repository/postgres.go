@@ -15,19 +15,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PostgresRepo struct {
+// UserRepo implementation
+type PostgresUserRepo struct {
 	db *pgxpool.Pool
 	logger *slog.Logger
 }
 
-func NewPostgresRepo(db *pgxpool.Pool, logger *slog.Logger) *PostgresRepo {
-	return &PostgresRepo{
-		db: db,
-	}
+func NewUserRepo(db *pgxpool.Pool, logger *slog.Logger) *PostgresUserRepo {
+	return &PostgresUserRepo{db: db, logger: logger}
 }
 
-// UserRepo implementation
-func (r *PostgresRepo) GetUserByID(ctx context.Context, id int) (user.User, error) {
+func (r *PostgresUserRepo) GetUserByID(ctx context.Context, id int) (user.User, error) {
 	const op = "/internal/repository/postgres/GetUserByID"
 	
 	var u user.User
@@ -44,7 +42,7 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, id int) (user.User, erro
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			r.logger.Warn("user not found", "op", op, "name", id)
+			r.logger.Warn("user not found", "op", op, "userId", id)
 			return user.User{}, fmt.Errorf("user not found: %d", id)
 		}
 		r.logger.Error("cannot get user", "op", op, "error", err)
@@ -62,7 +60,7 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, id int) (user.User, erro
 	return u, nil
 }
 
-func (r *PostgresRepo) GetUserByName(ctx context.Context, name string) (user.User, error) {
+func (r *PostgresUserRepo) GetUserByName(ctx context.Context, name string) (user.User, error) {
 	const op = "/internal/repository/postgres/GetUserByName"
 	
 	var u user.User
@@ -97,7 +95,7 @@ func (r *PostgresRepo) GetUserByName(ctx context.Context, name string) (user.Use
 	return u, nil
 }
 
-func (r *PostgresRepo) CreateUser(ctx context.Context, user user.User) (int, error) {
+func (r *PostgresUserRepo) CreateUser(ctx context.Context, user user.User) (int, error) {
 	const op = "/internal/repository/postgres/Create"
 
 	inventoryJSON, err := json.Marshal(user.Inventory.Items)
@@ -125,7 +123,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, user user.User) (int, err
 	return id, nil
 }
 
-func (r *PostgresRepo) UpdateUser(ctx context.Context, user user.User) error {
+func (r *PostgresUserRepo) UpdateUser(ctx context.Context, user user.User) error {
 	const op = "/internal/repository/postgres/UpdateUser"
 
 	inventoryJSON, err := json.Marshal(user.Inventory.Items)
@@ -150,7 +148,16 @@ func (r *PostgresRepo) UpdateUser(ctx context.Context, user user.User) error {
 }
 
 // TransactionRepo implementation
-func (r *PostgresRepo) CreateTransaction(ctx context.Context, t transactions.Transaction) error {
+type PostgresTransRepo struct {
+	db *pgxpool.Pool
+	logger *slog.Logger
+}
+
+func NewTransRepo(db *pgxpool.Pool, logger *slog.Logger) *PostgresTransRepo {
+	return &PostgresTransRepo{db: db, logger: logger}
+}
+
+func (r *PostgresTransRepo) CreateTransaction(ctx context.Context, t transactions.Transaction) error {
 	const op = "/internal/repository/postgres/CreateTransaction"
 
 	query := `
@@ -167,7 +174,7 @@ func (r *PostgresRepo) CreateTransaction(ctx context.Context, t transactions.Tra
 	return nil
 }
 
-func (r *PostgresRepo) GetTransactionByUser(ctx context.Context, userId int) ([]transactions.Transaction, error) {
+func (r *PostgresTransRepo) GetTransactionByUser(ctx context.Context, userId int) ([]transactions.Transaction, error) {
 	const op = "/internal/repository/postgres/GetTransactionByUser"
 
 	query := `
@@ -181,7 +188,7 @@ func (r *PostgresRepo) GetTransactionByUser(ctx context.Context, userId int) ([]
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			r.logger.Warn("no transactions found", "op", op, "userID", userId)
-			return nil, fmt.Errorf("no transaction found: %w", err)
+			return []transactions.Transaction{}, nil
 		}
 
 		r.logger.Error("failed to get transactions", "op", op, "error", err)
@@ -212,18 +219,26 @@ func (r *PostgresRepo) GetTransactionByUser(ctx context.Context, userId int) ([]
 }
 
 // ItemRepo implementation
-func (r *PostgresRepo) GetItemByName(ctx context.Context, name string) (items.ItemType, error) {
+type PostgresItemRepo struct {
+	db *pgxpool.Pool
+	logger *slog.Logger
+}
+
+func NewItemRepo(db *pgxpool.Pool, logger *slog.Logger) *PostgresItemRepo {
+	return &PostgresItemRepo{db: db, logger: logger}
+}
+
+func (r *PostgresItemRepo) GetItemByName(ctx context.Context, name string) (items.ItemType, error) {
 	const op = "/internal/repository/postgres/GetItemByName"
 
 	var item items.ItemType
-	item.Name = name
 
 	query := `
-		SELECT cost FROM items
+		SELECT name, cost FROM items
 		WHERE name = $1;
 	`
 
-	err := r.db.QueryRow(ctx, query, name).Scan(&item.Cost)
+	err := r.db.QueryRow(ctx, query, name).Scan(&item.Name, &item.Cost)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			r.logger.Warn("item not found", "op", op, "name", name)

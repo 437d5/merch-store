@@ -1,23 +1,10 @@
-CREATE DATABASE shop;
-
-\c shop;
-
--- TODO: update schema
 CREATE TABLE IF NOT EXISTS "users" (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(16),
-    password VARCHAR(32),
+    name VARCHAR(16) UNIQUE NOT NULL,
+    password VARCHAR(256) NOT NULL,
+    coins INT DEFAULT 0,
+    inventory JSON DEFAULT '[]'
 );
-
-INSERT INTO users (name, password) VALUES ('hello', '5d41402abc4b2a76b9719d911017c592');
-
-CREATE USER shop_service WITH PASSWORD 'shop_service_pass';
-
-GRANT CONNECT ON DATABASE shop TO shop_service;
-GRANT USAGE ON SCHEMA public TO shop_service;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES
-IN SCHEMA public TO shop_service; 
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO shop_service;
 
 CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
@@ -27,4 +14,23 @@ CREATE TABLE IF NOT EXISTS transactions (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TODO: add item type table
+CREATE TABLE IF NOT EXISTS items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(10) NOT NULL UNIQUE,
+    cost INT NOT NULL
+);
+
+INSERT INTO items (name, cost) VALUES
+    ('t-shirt', 80),
+    ('cup', 20),
+    ('book', 50),
+    ('pen', 10),
+    ('powerbank', 200),
+    ('hoody', 300),
+    ('umbrella', 200),
+    ('socks', 10),
+    ('wallet', 50),
+    ('pink-hoody', 500)
+ON CONFLICT (name) DO NOTHING;
+
+-- add fake data
