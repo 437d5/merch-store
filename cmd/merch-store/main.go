@@ -22,24 +22,27 @@ import (
 func main() {
 	cfg := config.MustLoad()
 
-	logger := logger.NewLogger(cfg.Log.LogMode, slog.LevelDebug)
+	logger := logger.NewLogger(cfg.Log.LogMode, slog.LevelError)
 
-	db, err := pgxpool.New(
-		context.Background(),
-		fmt.Sprintf(
-			"postgres://%s:%s@%s:%d/%s",
-			cfg.Db.DbUser, cfg.Db.DbPass, cfg.Db.DbHost, cfg.Db.DbPort, cfg.Db.DbName,
-		),
-	)
+	config, err := pgxpool.ParseConfig(fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s",
+		cfg.Db.DbUser, cfg.Db.DbPass, cfg.Db.DbHost, cfg.Db.DbPort, cfg.Db.DbName,
+	))
 	if err != nil {
-		logger.	Error("failed to connect to database", "error", err)
+		logger.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	config.MaxConns = 100
+	dbpool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		logger.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	defer dbpool.Close()
 
-	userRepo := repository.NewUserRepo(db, logger)
-	itemRepo := repository.NewItemRepo(db, logger)
-	transactionRepo := repository.NewTransRepo(db, logger)
+	userRepo := repository.NewUserRepo(dbpool, logger)
+	itemRepo := repository.NewItemRepo(dbpool, logger)
+	transactionRepo := repository.NewTransRepo(dbpool, logger)
 
 	userService := service.NewUserService(userRepo, logger)
 	marketService := service.NewMarketService(userRepo, logger, itemRepo)
@@ -53,7 +56,7 @@ func main() {
 	h.SetupRoutes(router)
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", cfg.Srv.SrvPort),
+		Addr:    fmt.Sprintf(":%d", cfg.Srv.SrvPort),
 		Handler: router,
 	}
 
@@ -77,4 +80,3 @@ func main() {
 
 	logger.Info("server exited")
 }
-

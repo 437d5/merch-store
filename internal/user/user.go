@@ -9,10 +9,10 @@ import (
 )
 
 type User struct {
-	Id int
-	Name string
-	Password string
-	Coins int
+	Id        int
+	Name      string
+	Password  string
+	Coins     int
 	Inventory inventory.Inventory
 }
 

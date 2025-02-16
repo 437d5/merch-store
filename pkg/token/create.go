@@ -12,7 +12,7 @@ const (
 )
 
 type TokenClaims struct {
-	Id int
+	Id       int
 	Username string
 	jwt.RegisteredClaims
 }
@@ -22,7 +22,7 @@ func CreateToken(id int, username, secret string, expAt int) (string, error) {
 	exp := now.Add(time.Duration(expAt) * time.Hour)
 
 	claims := TokenClaims{
-		Id: id,
+		Id:       id,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(exp),

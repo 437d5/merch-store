@@ -18,14 +18,14 @@ func formatTranscations(transactions []transactions.Transaction, userId int) gin
 		} else {
 			received = append(received, gin.H{
 				"fromUser": t.FromUser,
-				"amount": t.Amount,
+				"amount":   t.Amount,
 			})
 		}
 	}
 
 	return gin.H{
 		"received": received,
-		"sent": sent,  
+		"sent":     sent,
 	}
 }
 
@@ -34,7 +34,7 @@ func formatInventory(inventory inventory.Inventory) []gin.H {
 
 	for _, i := range inventory.Items {
 		items = append(items, gin.H{
-			"type": i.ItemType,
+			"type":     i.ItemType,
 			"quantity": i.Quantity,
 		})
 	}

@@ -18,7 +18,7 @@ const (
 	dbHostEnv = "DATABASE_HOST"
 
 	// env names for srv config
-	srvPortEnv = "SERVER_PORT" 
+	srvPortEnv = "SERVER_PORT"
 
 	secretKeyLen = 16
 
@@ -26,7 +26,7 @@ const (
 )
 
 type Config struct {
-	Db ConfigDB
+	Db  ConfigDB
 	Srv ConfigSrv
 	JWT ConfigJWT
 	Log ConfigLog
@@ -63,7 +63,7 @@ func MustLoad() *Config {
 	dbPass := getStringOrDefault(dbPassEnv, "password")
 	dbName := getStringOrDefault(dbNameEnv, "shop")
 	dbHost := getStringOrDefault(dbHostEnv, "db")
-	
+
 	srvPortStr := getStringOrDefault(srvPortEnv, "8080")
 	srvPort, err := strconv.Atoi(srvPortStr)
 	if err != nil {
@@ -76,7 +76,7 @@ func MustLoad() *Config {
 	}
 
 	log := getStringOrDefault(logModeEnv, "JSON")
-	
+
 	return &Config{
 		Db: ConfigDB{
 			DbPort: dbPort,
@@ -84,16 +84,16 @@ func MustLoad() *Config {
 			DbPass: dbPass,
 			DbName: dbName,
 			DbHost: dbHost,
-		},	
+		},
 		Srv: ConfigSrv{
 			SrvPort: srvPort,
-		},	
+		},
 		JWT: ConfigJWT{
 			Secret: secret,
 		},
 		Log: ConfigLog{
 			LogMode: log,
-		},	
+		},
 	}
 }
 

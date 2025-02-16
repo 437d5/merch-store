@@ -13,7 +13,7 @@ import (
 type MarketService struct {
 	userRepo user.UserRepo
 	itemRepo items.ItemRepo
-	logger *slog.Logger
+	logger   *slog.Logger
 }
 
 func NewMarketService(
@@ -22,7 +22,7 @@ func NewMarketService(
 	return &MarketService{
 		userRepo: userRepo,
 		itemRepo: itemRepo,
-		logger: logger,
+		logger:   logger,
 	}
 }
 

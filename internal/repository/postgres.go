@@ -17,7 +17,7 @@ import (
 
 // UserRepo implementation
 type PostgresUserRepo struct {
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
 	logger *slog.Logger
 }
 
@@ -27,7 +27,7 @@ func NewUserRepo(db *pgxpool.Pool, logger *slog.Logger) *PostgresUserRepo {
 
 func (r *PostgresUserRepo) GetUserByID(ctx context.Context, id int) (user.User, error) {
 	const op = "/internal/repository/postgres/GetUserByID"
-	
+
 	var u user.User
 	var inventoryJSON string
 
@@ -62,7 +62,7 @@ func (r *PostgresUserRepo) GetUserByID(ctx context.Context, id int) (user.User, 
 
 func (r *PostgresUserRepo) GetUserByName(ctx context.Context, name string) (user.User, error) {
 	const op = "/internal/repository/postgres/GetUserByName"
-	
+
 	var u user.User
 	var inventoryJSON string
 
@@ -70,7 +70,7 @@ func (r *PostgresUserRepo) GetUserByName(ctx context.Context, name string) (user
 		SELECT id, name, password, coins, inventory
 		FROM users
 		WHERE name = $1;
-	`	
+	`
 
 	err := r.db.QueryRow(ctx, query, name).Scan(
 		&u.Id, &u.Name, &u.Password, &u.Coins, &inventoryJSON,
@@ -149,7 +149,7 @@ func (r *PostgresUserRepo) UpdateUser(ctx context.Context, user user.User) error
 
 // TransactionRepo implementation
 type PostgresTransRepo struct {
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
 	logger *slog.Logger
 }
 
@@ -220,7 +220,7 @@ func (r *PostgresTransRepo) GetTransactionByUser(ctx context.Context, userId int
 
 // ItemRepo implementation
 type PostgresItemRepo struct {
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
 	logger *slog.Logger
 }
 

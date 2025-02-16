@@ -10,17 +10,17 @@ import (
 	"github.com/437d5/merch-store/internal/user"
 )
 
-var	ErrInvalidPassword = errors.New("invalid password")
+var ErrInvalidPassword = errors.New("invalid password")
 
 type UserService struct {
 	userRepo user.UserRepo
-	logger *slog.Logger
+	logger   *slog.Logger
 }
 
 func NewUserService(userRepo user.UserRepo, logger *slog.Logger) *UserService {
 	return &UserService{
 		userRepo: userRepo,
-		logger: logger,
+		logger:   logger,
 	}
 }
 
@@ -39,8 +39,8 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 	}
 
 	newUser := user.User{
-		Name: name,
-		Coins: 100000,
+		Name:      name,
+		Coins:     100000,
 		Inventory: inventory.Inventory{},
 	}
 
@@ -48,7 +48,7 @@ func (s *UserService) AuthUser(ctx context.Context, name, password string) (user
 	if err != nil {
 		s.logger.Error("cannot register new user", "op", op, "error", err)
 		return user.User{}, fmt.Errorf("cannot set pass: %w", err)
-	} 
+	}
 
 	id, err := s.userRepo.CreateUser(ctx, newUser)
 	if err != nil {

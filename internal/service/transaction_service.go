@@ -12,13 +12,13 @@ import (
 
 var (
 	ErrNotEnoughCoins = errors.New("not enough coins")
-	ErrInvalidAmount = errors.New("invalid amount of coins")
+	ErrInvalidAmount  = errors.New("invalid amount of coins")
 )
 
 type TransactionService struct {
 	transactionRepo transactions.TransactionRepo
-	userRepo user.UserRepo
-	logger *slog.Logger
+	userRepo        user.UserRepo
+	logger          *slog.Logger
 }
 
 func NewTransactionService(
@@ -27,17 +27,17 @@ func NewTransactionService(
 ) *TransactionService {
 	return &TransactionService{
 		transactionRepo: transactionRepo,
-		userRepo: userRepo,
-		logger: logger,
+		userRepo:        userRepo,
+		logger:          logger,
 	}
 }
 
 func (s *TransactionService) TransferCoins(
-	ctx context.Context, 
+	ctx context.Context,
 	fromUserId, amount int, toUsername string,
 ) error {
 	const op = "/internal/service/transaction_service/TransferCoins"
-	
+
 	fromUser, err := s.userRepo.GetUserByID(ctx, fromUserId)
 	if err != nil {
 		s.logger.Error("Error transfering coins", "op", op, "error", err)
@@ -77,10 +77,10 @@ func (s *TransactionService) TransferCoins(
 	}
 	s.logger.Debug("ToUser updated", "op", op)
 
-	transaction := transactions.Transaction {
+	transaction := transactions.Transaction{
 		FromUser: fromUserId,
-		ToUser: toUser.Id,
-		Amount: amount,
+		ToUser:   toUser.Id,
+		Amount:   amount,
 	}
 
 	s.logger.Debug("Trying create transaction", "op", op)

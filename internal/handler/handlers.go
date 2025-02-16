@@ -12,11 +12,11 @@ import (
 )
 
 type Handler struct {
-	userService *service.UserService
-	marketService *service.MarketService
+	userService        *service.UserService
+	marketService      *service.MarketService
 	transactionService *service.TransactionService
-	logger *slog.Logger
-	cfg config.Config
+	logger             *slog.Logger
+	cfg                config.Config
 }
 
 func NewHandler(
@@ -26,16 +26,16 @@ func NewHandler(
 	logger *slog.Logger,
 ) *Handler {
 	return &Handler{
-		userService: userService,
-		marketService: marketService,
+		userService:        userService,
+		marketService:      marketService,
 		transactionService: transactionService,
-		logger: logger,
+		logger:             logger,
 	}
 }
 
 func (h *Handler) SetupRoutes(router *gin.Engine) {
 	api := router.Group("/api")
-	
+
 	api.GET("/info", h.AuthMiddleware, h.GetUserInfo)
 	api.POST("/sendCoin", h.AuthMiddleware, h.SendCoin)
 	api.GET("/buy/:item", h.AuthMiddleware, h.BuyItem)
@@ -52,7 +52,7 @@ func (h *Handler) GetUserInfo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	
+
 	tList, err := h.transactionService.GetTransactionsByUser(c.Request.Context(), userId)
 	if err != nil {
 		h.logger.Error("failed get transaction list", "op", op, "error", err)
@@ -61,8 +61,8 @@ func (h *Handler) GetUserInfo(c *gin.Context) {
 	}
 
 	response := gin.H{
-		"coins": u.Coins,
-		"inventory": formatInventory(u.Inventory),
+		"coins":       u.Coins,
+		"inventory":   formatInventory(u.Inventory),
 		"coinHistory": formatTranscations(tList, userId),
 	}
 
@@ -71,12 +71,12 @@ func (h *Handler) GetUserInfo(c *gin.Context) {
 
 func (h *Handler) SendCoin(c *gin.Context) {
 	const op = "/internal/handler/handlers/SendCoin"
-	
+
 	userId := c.GetInt("user_id")
 
 	var req struct {
 		ToUsername string `json:"toUser" binding:"required"`
-		Amount int `json:"amount" binding:"required"`
+		Amount     int    `json:"amount" binding:"required"`
 	}
 
 	if err := c.ShouldBind(&req); err != nil {
@@ -111,7 +111,7 @@ func (h *Handler) SendCoin(c *gin.Context) {
 
 func (h *Handler) BuyItem(c *gin.Context) {
 	const op = "/internal/handler/handlers/BuyItem"
-	
+
 	userId := c.GetInt("user_id")
 
 	err := h.marketService.BuyMerch(c.Request.Context(), userId, c.Param("item"))

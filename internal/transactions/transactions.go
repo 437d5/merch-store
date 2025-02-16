@@ -6,8 +6,8 @@ import (
 
 type Transaction struct {
 	FromUser int
-	ToUser int
-	Amount int
+	ToUser   int
+	Amount   int
 }
 
 type TransactionRepo interface {
