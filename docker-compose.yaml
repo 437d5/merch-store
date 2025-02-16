@@ -8,12 +8,14 @@ services:
         - "8080:8080"
       environment:
         - DATABASE_PORT=5432
-        - DATABASE_USER=shop_service
+        - DATABASE_USER=postgres
         - DATABASE_PASSWORD=shop_service_pass
         - DATABASE_NAME=shop
         - DATABASE_HOST=db
 
         - SERVER_PORT=8080
+
+        - LOG_MODE=JSON
       depends_on:
         db:
             condition: service_healthy
@@ -25,7 +27,7 @@ services:
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: shop_service_pass
       POSTGRES_DB: shop
     volumes:
       # "./migrations/init.sql" - путь к миграциям БД
